@@ -18,11 +18,14 @@ router.route("/")
 router.get("/new",isLoggedIn, listingController.renderNewForm );
 
 
+router.get("/category/:category", listingController.CategoryListing); 
+
 router.route("/:id")
 .get( wrapAsync(listingController.showListing))
 .put( isLoggedIn, isOwner, upload.single('image'), validateListing, wrapAsync(listingController.updateListing))
 .delete( isLoggedIn,isOwner, wrapAsync(listingController.deleteListing));
-  
+
+
 
 
 

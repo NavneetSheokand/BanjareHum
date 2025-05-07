@@ -9,7 +9,9 @@ const path = require("path");
 const methodOverride = require("method-override");
 
 
-const dbUrl = process.env.ATLASDB_URL;
+// const dbUrl = process.env.ATLASDB_URL;
+const dbUrl = "mongodb://127.0.0.1:27017/wanderlust";
+
 
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
@@ -55,7 +57,7 @@ const store = MongoStore.create({
     touchAfter:  24*3600,
 });
 
-store.on("error",() =>{
+store.on("error", (err) => {
     console.log("ERROR in MONGO SESSION STORE", err);
 });
 
@@ -108,13 +110,14 @@ app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
 
-app.all("*",(reqq,res,next)=>{
+app.all("*",(req,res,next)=>{
     next(new ExpressError(404,"Page Not Found!"));
 });
 
 
 
 app.use((err,req,res,next) =>{
+    console.log(err);
     let{statusCode=500, message="Something went wrong"}=err;
     res.status(statusCode).render("listings/error.ejs",{message});
     //res.status(statusCode).send(message);

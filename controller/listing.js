@@ -4,9 +4,26 @@ const mapToken = process.env.MAP_TOKEN;
 const geocodingClient = mbxGeocoding({ accessToken: mapToken });
 
 module.exports.index = async (req,res) => {
-    const allListings= await Listing.find({});
-         res.render("listings/index.ejs", { allListings });
-  };
+    const { q } = req.query;
+
+    let allListings;
+    if(q){
+      const regex = new RegExp(q, 'i');
+      allListings = await Listing.find({
+        $or: [
+            { title: regex },
+            { category: regex },
+            {location: regex}
+        ]
+    });
+    } else {
+    allListings = await Listing.find({});
+    }
+    
+    res.render("listings/index.ejs", { allListings, category: null });
+};
+
+
 
 module.exports.renderNewForm = (req,res) =>{
   
@@ -64,6 +81,14 @@ let response = await geocodingClient
     res.redirect('/listings');
   };
 
+  module.exports.CategoryListing = async (req, res) => {
+    const { category } = req.params;
+    const listings = await Listing.find({ category: category });
+    res.render("listings/index", { allListings: listings, category });
+};
+
+  
+
 module.exports.renderEditForm = async(req,res) =>{
     let {id}= req.params;
     const listing= await Listing.findById(id);
@@ -76,6 +101,8 @@ module.exports.renderEditForm = async(req,res) =>{
     originalImageUrl = originalImageUrl.replace("/upload","/upload/w_250");
     res.render("listings/edit.ejs",{listing, originalImageUrl});
 };
+
+
 
 module.exports.updateListing = async (req, res) => {
 // app.put("/listings/:id",upload.single('image'),validateListing, wrapAsync(async(req,res) =>{
